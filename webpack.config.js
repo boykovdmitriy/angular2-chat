@@ -4,7 +4,7 @@ const webpack                  = require("webpack"),
 const ExtractTextPlugin        = require("extract-text-webpack-plugin");
 const CleanWebpackPlugin       = require('clean-webpack-plugin');
 
-module.exports                 = {
+module.exports = {
     devtool  : "source-map",
     entry    : {
         "app"   : "./app/boot.ts",
