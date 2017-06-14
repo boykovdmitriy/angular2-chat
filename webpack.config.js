@@ -1,8 +1,10 @@
-var webpack                  = require("webpack"),
-    path                     = require("path"),
-    ContextReplacementPlugin = require("webpack/lib/ContextReplacementPlugin");
+const webpack                  = require("webpack"),
+      path                     = require("path"),
+      ContextReplacementPlugin = require("webpack/lib/ContextReplacementPlugin");
+const ExtractTextPlugin        = require("extract-text-webpack-plugin");
+const CleanWebpackPlugin       = require('clean-webpack-plugin');
 
-module.exports = {
+module.exports                 = {
     devtool  : "source-map",
     entry    : {
         "app"   : "./app/boot.ts",
@@ -20,6 +22,9 @@ module.exports = {
             '@angular/platform-browser',
             '@angular-redux/store',
             "rxjs"
+        ],
+        "styles": [
+            "./app/sharedStyles/index.css"
         ]
     },
     output   : {
@@ -27,21 +32,41 @@ module.exports = {
         path    : path.resolve(__dirname, './public')
     },
     resolve  : {
-        extensions: [".js", ".ts", ".css"]
+        extensions: [".js", ".ts", ".css", 'html']
     },
     module   : {
         loaders: [
             {
-                test  : /\.ts/,
-                loader: "ts-loader"
+                test   : /\.ts/,
+                loaders: ['awesome-typescript-loader', 'angular2-template-loader?keepUrl=true'],
+            },
+            {
+                /*for styles and templates included in app*/
+                test   : /\.(html|css)$/,
+                loader : 'file-loader',
+                include: [
+                    path.resolve(__dirname, "app")
+                ],
+                exclude: [
+                    path.resolve(__dirname, "app/sharedStyles")
+                ]
             }, {
                 test   : /\.css$/,
-                exclude: /node_modules/,
-                loader : "style-loader!css-loader"
+                loader : ExtractTextPlugin.extract({
+                    fallback: "style-loader",
+                    use     : "css-loader"
+                }),
+                include: [
+                    path.resolve(__dirname, "app/sharedStyles")
+                ]
             }
         ]
     },
     plugins  : [
+        /*clean build path*/
+        new CleanWebpackPlugin('public', {
+            exclude: ['index.html']
+        }),
         new webpack.optimize.CommonsChunkPlugin({
             name     : 'vendor',
             filename : 'vendor.js',
@@ -49,12 +74,14 @@ module.exports = {
         }), new ContextReplacementPlugin(
             /angular(\\|\/)core(\\|\/)@angular/,
             path.resolve(__dirname, '../src')
-        )
+        ),
+        /*extract styles from style.js*/
+        new ExtractTextPlugin("styles.css")
     ],
     devServer: {
         contentBase       : path.join(__dirname, "public"),
         historyApiFallback: true,
-        compress          : false,
+        compress          : true,
         quiet             : false,
         headers           : {"X-Custom-Header": "yes"},
         stats             : {colors: true},
