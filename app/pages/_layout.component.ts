@@ -5,7 +5,10 @@ import {Component} from "@angular/core";
         <side-menu></side-menu>
     `,
     styles  : [`
-    
+        :host {
+            display: flex;
+            flex-direction: row;
+        }
     `]
 })
 
